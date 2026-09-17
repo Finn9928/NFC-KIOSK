@@ -1,5 +1,6 @@
 #include "display.h"
 #include "config.h"
+#include "encoder.h"
 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -68,6 +69,68 @@ void displayRows(std::initializer_list<String> rows) {
 
         row++;
     }
+
+    display.display();
+}
+
+void displayMenu(
+    std::initializer_list<String> rows,
+    uint8_t currentPage,
+    uint8_t totalPages
+) {
+
+    display.clearDisplay();
+
+    // --------------------------------------------------------
+    // Draw menu content
+    // --------------------------------------------------------
+
+    uint8_t row = 0;
+
+    for (const String &text : rows) {
+
+        if (row >= 7) {
+            break;
+        }
+
+        display.setCursor(
+            0,
+            row * 8
+        );
+
+        display.print(text);
+
+        row++;
+    }
+
+
+    // --------------------------------------------------------
+    // Page counter
+    // --------------------------------------------------------
+
+    String pageText =
+        String(currentPage + 1) +
+        "/" +
+        String(totalPages);
+
+
+    int16_t x =
+        OLED_WIDTH -
+        (pageText.length() * 6);
+
+
+    if (x < 0) {
+        x = 0;
+    }
+
+
+    display.setCursor(
+        x,
+        56
+    );
+
+    display.print(pageText);
+
 
     display.display();
 }
