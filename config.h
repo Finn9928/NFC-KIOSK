@@ -32,3 +32,15 @@
 #define STORAGE_NAMESPACE "chipbank"
 #define CARD_FORMAT_VERSION 1
 #define KIOSK_FORMAT_VERSION 1
+
+// =========================
+// Rotary encoder
+// =========================
+
+#define ENCODER_CLK 3
+#define ENCODER_DT  4
+#define ENCODER_SW  5
+
+// Change to true if clockwise/counter-clockwise
+// ends up backwards on your particular encoder.
+#define ENCODER_REVERSED false

@@ -29,3 +29,13 @@ bool storageDelete(
 );
 
 void storageClear();
+
+bool storageWriteUInt(
+    const char *key,
+    uint32_t value
+);
+
+uint32_t storageReadUInt(
+    const char *key,
+    uint32_t defaultValue = 0
+);

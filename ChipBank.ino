@@ -14,7 +14,7 @@ void setup() {
 
     Serial.println();
     Serial.println("====================");
-    Serial.println("     CHIP BANK");
+    Serial.println("     CHIP KIOSK");
     Serial.println("====================");
 
     // Start I2C
@@ -28,7 +28,7 @@ void setup() {
     storageBegin();
 
     displayRows({
-        "CHIP BANK",
+        "CHIP KIOSK",
         "STARTING..."
     });
 
@@ -38,7 +38,7 @@ void setup() {
     if (!nfcBegin()) {
 
         displayRows({
-            "CHIP BANK",
+            "CHIP KIOSK",
             "NFC ERROR",
             "CHECK READER"
         });
@@ -49,7 +49,7 @@ void setup() {
     }
 
     displayRows({
-        "CHIP BANK",
+        "CHIP KIOSK",
         "READY",
         "",
         "SCAN CARD"
@@ -76,7 +76,7 @@ void loop() {
         delay(1500);
 
         displayRows({
-            "CHIP BANK",
+            "CHIP KIOSK",
             "READY",
             "",
             "SCAN CARD"

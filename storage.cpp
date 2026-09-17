@@ -68,3 +68,25 @@ void storageClear() {
 
     preferences.clear();
 }
+
+bool storageWriteUInt(
+    const char *key,
+    uint32_t value
+) {
+
+    return preferences.putUInt(
+        key,
+        value
+    );
+}
+
+uint32_t storageReadUInt(
+    const char *key,
+    uint32_t defaultValue
+) {
+
+    return preferences.getUInt(
+        key,
+        defaultValue
+    );
+}
