@@ -18,9 +18,3 @@ void displayMenu(
     uint8_t currentPage,
     uint8_t totalPages
 );
-
-void displayMenu(
-    std::initializer_list<String> rows,
-    uint8_t currentPage,
-    uint8_t totalPages
-);

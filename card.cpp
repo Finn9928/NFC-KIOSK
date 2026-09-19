@@ -481,3 +481,99 @@ bool cardFormat(
 
     return cardWrite(card);
 }
+
+// ============================================================
+// Balance operations
+// ============================================================
+
+bool cardSetBalance(
+    Card &card,
+    uint64_t newBalance
+) {
+
+    // No change means no transaction.
+    if (newBalance == card.chipBalance) {
+        return true;
+    }
+
+    // Prevent transaction counter overflow.
+    if (card.transactionCount == UINT64_MAX) {
+        return false;
+    }
+
+    card.chipBalance = newBalance;
+    card.transactionCount++;
+
+    return true;
+}
+
+
+// ============================================================
+// Add chips
+// ============================================================
+
+bool cardAddBalance(
+    Card &card,
+    uint64_t amount
+) {
+
+    // Nothing to add.
+    if (amount == 0) {
+        return true;
+    }
+
+    // Prevent balance overflow.
+    if (amount > UINT64_MAX - card.chipBalance) {
+        return false;
+    }
+
+    return cardSetBalance(
+        card,
+        card.chipBalance + amount
+    );
+}
+
+
+// ============================================================
+// Remove chips
+// ============================================================
+
+bool cardRemoveBalance(
+    Card &card,
+    uint64_t amount
+) {
+
+    // Not enough chips.
+    if (amount > card.chipBalance) {
+        return false;
+    }
+
+    // Nothing to remove.
+    if (amount == 0) {
+        return true;
+    }
+
+    return cardSetBalance(
+        card,
+        card.chipBalance - amount
+    );
+}
+
+
+// ============================================================
+// Record a win
+// ============================================================
+
+bool cardRecordWin(
+    Card &card
+) {
+
+    // Prevent counter overflow.
+    if (card.gamesWon == UINT64_MAX) {
+        return false;
+    }
+
+    card.gamesWon++;
+
+    return true;
+}

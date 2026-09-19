@@ -30,3 +30,31 @@ bool cardFormat(
 );
 
 bool cardPresent();
+
+// =========================
+// Balance operations
+// =========================
+
+bool cardSetBalance(
+    Card &card,
+    uint64_t newBalance
+);
+
+bool cardAddBalance(
+    Card &card,
+    uint64_t amount
+);
+
+bool cardRemoveBalance(
+    Card &card,
+    uint64_t amount
+);
+
+
+// =========================
+// Game statistics
+// =========================
+
+bool cardRecordWin(
+    Card &card
+);
