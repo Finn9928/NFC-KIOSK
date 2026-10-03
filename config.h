@@ -30,7 +30,6 @@
 // =========================
 
 #define STORAGE_NAMESPACE "chipbank"
-#define CARD_FORMAT_VERSION 1
 #define KIOSK_FORMAT_VERSION 1
 
 // =========================
@@ -40,6 +39,14 @@
 #define ENCODER_CLK 3
 #define ENCODER_DT  4
 #define ENCODER_SW  5
+
+// =========================
+// Card Format
+// =========================
+
+#define CARD_NAME_MAX_LENGTH 19
+#define DEFAULT_PLAYER_START_BALANCE 100
+#define CARD_FORMAT_VERSION 1
 
 // Change to true if clockwise/counter-clockwise
 // ends up backwards on your particular encoder.

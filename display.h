@@ -18,3 +18,10 @@ void displayMenu(
     uint8_t currentPage,
     uint8_t totalPages
 );
+
+void displayKeyboard(
+    const String &preview,
+    const char *const keys[],
+    uint8_t keyCount,
+    uint8_t selectedKey
+);

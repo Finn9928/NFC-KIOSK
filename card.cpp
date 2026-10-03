@@ -27,7 +27,8 @@ static const uint8_t CARD_PAYLOAD_PAGES = 12;
 static const uint8_t CARD_CRC_PAGE = 16;
 
 // 19 characters + null terminator
-static const uint8_t CARD_NAME_SIZE = 20;
+static const uint8_t CARD_NAME_SIZE =
+    CARD_NAME_MAX_LENGTH + 1;
 
 // Magic bytes: "CB"
 static const uint8_t CARD_MAGIC_0 = 'C';

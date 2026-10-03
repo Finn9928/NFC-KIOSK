@@ -6,21 +6,15 @@
 #include "nfc.h"
 #include "storage.h"
 #include "card.h"
+#include "keyboard.h"
 
 
 // ============================================================
 // Temporary test settings
 // ============================================================
-//
-// Change these manually while we are testing.
-//
-// ============================================================
 
 const char *TEMP_PLAYER_NAME =
     "Max Verstappen";
-
-const uint64_t TEMP_PLAYER_START_BALANCE =
-    1000;
 
 const uint64_t TEMP_BALANCE_STEP =
     100;
@@ -39,6 +33,7 @@ enum KioskState {
     MAIN_MENU,
     CARD_MENU,
     NEW_PLAYER,
+    NEW_PLAYER_SCAN,
     BALANCE_ADJUST
 
 };
@@ -248,12 +243,14 @@ void updateMainMenu() {
                     "New Player selected."
                 );
 
+                keyboardReset();
+
                 kioskState =
                     NEW_PLAYER;
 
                 showNewPlayerScreen();
 
-                break;
+            break;
 
 
             // ------------------------------------------------
@@ -471,17 +468,78 @@ void updateCardMenu() {
 
 
 // ============================================================
-// New player screen
+// New player keyboard
 // ============================================================
 
 void showNewPlayerScreen() {
 
+    keyboardDraw();
+}
+
+
+// ============================================================
+// New player keyboard update
+// ============================================================
+
+void updateNewPlayer() {
+
+    KeyboardResult result =
+        keyboardUpdate();
+
+
+    if (
+        result !=
+        KEYBOARD_DONE
+    ) {
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // Name required
+    // --------------------------------------------------------
+
+    if (
+        keyboardGetText().length() == 0
+    ) {
+
+        displayRows({
+            "NEW PLAYER",
+            "",
+            "NAME REQUIRED"
+        });
+
+        delay(1000);
+
+        keyboardDraw();
+
+        return;
+    }
+
+
+    Serial.println();
+
+    Serial.print(
+        "New player name: "
+    );
+
+    Serial.println(
+        keyboardGetText()
+    );
+
+
+    // --------------------------------------------------------
+    // Move to card scan
+    // --------------------------------------------------------
+
+    kioskState =
+        NEW_PLAYER_SCAN;
+
+
     displayRows({
         "NEW PLAYER",
         "",
-        TEMP_PLAYER_NAME,
-        "START BALANCE",
-        String(TEMP_PLAYER_START_BALANCE),
+        keyboardGetText(),
         "",
         "SCAN NEW CARD"
     });
@@ -489,14 +547,10 @@ void showNewPlayerScreen() {
 
 
 // ============================================================
-// New player update
+// New player card scan
 // ============================================================
 
-void updateNewPlayer() {
-
-    // --------------------------------------------------------
-    // Look for a card
-    // --------------------------------------------------------
+void updateNewPlayerScan() {
 
     if (!cardPresent()) {
         return;
@@ -510,22 +564,27 @@ void updateNewPlayer() {
 
 
     // --------------------------------------------------------
-    // Build new card
+    // Create new card
     // --------------------------------------------------------
 
     Card newCard;
 
+
     newCard.playerName =
-        TEMP_PLAYER_NAME;
+        keyboardGetText();
+
 
     newCard.chipBalance =
-        TEMP_PLAYER_START_BALANCE;
+        DEFAULT_PLAYER_START_BALANCE;
+
 
     newCard.transactionCount =
         0;
 
+
     newCard.gamesWon =
         0;
+
 
     newCard.formatVersion =
         CARD_FORMAT_VERSION;
@@ -534,9 +593,7 @@ void updateNewPlayer() {
     displayRows({
         "NEW PLAYER",
         "",
-        "WRITING CARD...",
-        "",
-        TEMP_PLAYER_NAME
+        "WRITING CARD..."
     });
 
 
@@ -544,23 +601,39 @@ void updateNewPlayer() {
     // Write
     // --------------------------------------------------------
 
-    if (!cardWrite(newCard)) {
+    if (
+        !cardWrite(newCard)
+    ) {
 
         Serial.println(
             "Failed to write new player card."
         );
+
 
         displayRows({
             "NEW PLAYER",
             "",
             "WRITE FAILED",
             "",
-            "TRY AGAIN"
+            "REMOVE CARD"
         });
 
-        delay(1500);
 
-        showNewPlayerScreen();
+        // Wait for card removal before
+        // allowing another attempt.
+
+        while (cardPresent()) {
+
+            delay(100);
+        }
+
+
+        displayRows({
+            "NEW PLAYER",
+            "",
+            "SCAN NEW CARD"
+        });
+
 
         return;
     }
@@ -572,30 +645,44 @@ void updateNewPlayer() {
 
 
     // --------------------------------------------------------
-    // Read back
+    // Verify
     // --------------------------------------------------------
 
     delay(100);
 
+
     Card verifyCard;
 
-    if (!cardRead(verifyCard)) {
+
+    if (
+        !cardRead(
+            verifyCard
+        )
+    ) {
 
         Serial.println(
-            "Card write succeeded but "
-            "verification failed."
+            "New player verification failed."
         );
+
 
         displayRows({
             "NEW PLAYER",
             "",
-            "VERIFY FAILED"
+            "VERIFY FAILED",
+            "",
+            "REMOVE CARD"
         });
 
-        delay(1500);
+
+        while (cardPresent()) {
+
+            delay(100);
+        }
+
 
         kioskState =
             SCANNING;
+
 
         showScanScreen();
 
@@ -603,12 +690,34 @@ void updateNewPlayer() {
     }
 
 
+    // --------------------------------------------------------
+    // Success
+    // --------------------------------------------------------
+
     currentCard =
         verifyCard;
 
 
     Serial.println(
         "New player card verified."
+    );
+
+
+    Serial.print(
+        "Player: "
+    );
+
+    Serial.println(
+        currentCard.playerName
+    );
+
+
+    Serial.print(
+        "Balance: "
+    );
+
+    Serial.println(
+        currentCard.chipBalance
     );
 
 
@@ -621,10 +730,9 @@ void updateNewPlayer() {
     kioskState =
         CARD_MENU;
 
+
     showCardMenu();
 }
-
-
 // ============================================================
 // Begin balance adjustment
 // ============================================================
@@ -899,7 +1007,9 @@ void updateBalanceAdjust() {
             displayRows({
                 "BALANCE UPDATE",
                 "",
-                "WRITE FAILED"
+                "WRITE FAILED",
+                "PLEASE KEEP THE CARD",
+                "ON THE SCANNER"
             });
 
             delay(1500);
@@ -1222,6 +1332,15 @@ void loop() {
     ) {
 
         updateNewPlayer();
+    }
+
+
+    else if (
+        kioskState ==
+        NEW_PLAYER_SCAN
+    ) {
+
+        updateNewPlayerScan();
     }
 
 
